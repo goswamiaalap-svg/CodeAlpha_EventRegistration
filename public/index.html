@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EventHub — Event Registration System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- Navigation -->
+  <header class="navbar">
+    <div class="nav-container">
+      <div class="brand">
+        <span class="brand-badge">🎫</span>
+        <span class="brand-title">Event<strong>Hub</strong></span>
+      </div>
+
+      <nav class="nav-tabs">
+        <button class="nav-tab active" data-tab="events">Browse Events</button>
+        <button class="nav-tab" data-tab="my-registrations" id="tab-my-regs" style="display:none;">My Registrations</button>
+        <button class="nav-tab" data-tab="organizer" id="tab-organizer" style="display:none;">Organizer Panel</button>
+      </nav>
+
+      <div class="auth-actions">
+        <div id="user-profile" class="user-profile" style="display:none;">
+          <span class="avatar-circle" id="user-avatar">U</span>
+          <div class="user-info">
+            <span class="user-name" id="user-display-name">User</span>
+            <span class="user-role-badge" id="user-role-badge">Attendee</span>
+          </div>
+          <button id="logout-btn" class="btn btn-outline-sm">Log out</button>
+        </div>
+
+        <div id="auth-buttons" class="auth-buttons">
+          <button id="open-login-btn" class="btn btn-outline">Log in</button>
+          <button id="open-register-btn" class="btn btn-primary">Sign up</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Notification Banner -->
+  <div id="alert-banner" class="alert-banner hidden"></div>
+
+  <main class="main-content">
+    
+    <!-- Tab 1: Browse Events -->
+    <section id="view-events" class="tab-view active">
+      <div class="section-header">
+        <div>
+          <h1 class="page-title">Discover Upcoming Events</h1>
+          <p class="page-subtitle">Reserve your spot at premier tech summits, hands-on workshops, and networking conferences.</p>
+        </div>
+        <div class="filter-controls">
+          <input type="text" id="search-input" placeholder="Search by title, location..." class="search-input" />
+        </div>
+      </div>
+
+      <div id="events-grid" class="events-grid">
+        <div class="loading-state">Loading events...</div>
+      </div>
+    </section>
+
+    <!-- Tab 2: My Registrations -->
+    <section id="view-my-registrations" class="tab-view">
+      <div class="section-header">
+        <div>
+          <h1 class="page-title">My Registered Events</h1>
+          <p class="page-subtitle">Manage your bookings, check event details, or cancel whenever plans change.</p>
+        </div>
+      </div>
+      <div id="registrations-list" class="registrations-list">
+        <!-- Rendered dynamically -->
+      </div>
+    </section>
+
+    <!-- Tab 3: Organizer Panel -->
+    <section id="view-organizer" class="tab-view">
+      <div class="section-header">
+        <div>
+          <h1 class="page-title">Organizer Dashboard</h1>
+          <p class="page-subtitle">Create and manage your events, track capacity, and view attendee lists.</p>
+        </div>
+        <button id="btn-create-event-modal" class="btn btn-primary">+ Create New Event</button>
+      </div>
+
+      <div class="organizer-dashboard">
+        <div class="card">
+          <h2 class="card-title">My Hosted Events</h2>
+          <div id="organizer-events-list" class="organizer-events-list">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Auth Modal (Login / Register) -->
+  <div id="auth-modal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <button class="modal-close" id="close-auth-modal">&times;</button>
+      <div class="auth-tabs">
+        <button class="auth-tab-btn active" id="auth-tab-login">Log In</button>
+        <button class="auth-tab-btn" id="auth-tab-register">Sign Up</button>
+      </div>
+
+      <!-- Login Form -->
+      <form id="login-form" class="auth-form">
+        <div class="form-group">
+          <label for="login-email">Email Address</label>
+          <input type="email" id="login-email" required placeholder="you@example.com" />
+        </div>
+        <div class="form-group">
+          <label for="login-password">Password</label>
+          <input type="password" id="login-password" required placeholder="••••••••" />
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Log In</button>
+        <p class="demo-tip">Demo Organizer: <code>organizer@demo.com</code> / <code>organizer123</code></p>
+      </form>
+
+      <!-- Register Form -->
+      <form id="register-form" class="auth-form hidden">
+        <div class="form-group">
+          <label for="reg-name">Full Name</label>
+          <input type="text" id="reg-name" required placeholder="Jane Doe" />
+        </div>
+        <div class="form-group">
+          <label for="reg-email">Email Address</label>
+          <input type="email" id="reg-email" required placeholder="jane@example.com" />
+        </div>
+        <div class="form-group">
+          <label for="reg-password">Password (min 6 chars)</label>
+          <input type="password" id="reg-password" required minlength="6" placeholder="••••••••" />
+        </div>
+        <div class="form-group">
+          <label for="reg-role">Account Type</label>
+          <select id="reg-role">
+            <option value="user">Attendee (Register for events)</option>
+            <option value="organizer">Organizer (Create & host events)</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Create Account</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Create Event Modal -->
+  <div id="event-modal" class="modal-overlay hidden">
+    <div class="modal-card modal-lg">
+      <button class="modal-close" id="close-event-modal">&times;</button>
+      <h2 class="modal-title">Host a New Event</h2>
+      <form id="create-event-form">
+        <div class="form-group">
+          <label for="event-title">Event Title</label>
+          <input type="text" id="event-title" required placeholder="e.g. AI & Cloud Developer Conference" />
+        </div>
+        <div class="form-group">
+          <label for="event-desc">Description</label>
+          <textarea id="event-desc" required rows="3" placeholder="Overview of topics, speakers, schedule..."></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="event-date">Date</label>
+            <input type="date" id="event-date" required />
+          </div>
+          <div class="form-group">
+            <label for="event-time">Time</label>
+            <input type="time" id="event-time" required />
+          </div>
+          <div class="form-group">
+            <label for="event-cap">Capacity</label>
+            <input type="number" id="event-cap" min="1" required placeholder="100" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="event-loc">Location</label>
+          <input type="text" id="event-loc" required placeholder="e.g. Silicon Hall, Bangalore or Online Zoom" />
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Publish Event</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Attendees Modal -->
+  <div id="attendees-modal" class="modal-overlay hidden">
+    <div class="modal-card modal-lg">
+      <button class="modal-close" id="close-attendees-modal">&times;</button>
+      <h2 class="modal-title" id="attendees-modal-title">Event Attendees</h2>
+      <div id="attendees-modal-content" class="attendees-modal-content">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <p>EventHub &bull; CodeAlpha Backend Internship Task 2 &bull; Built with Node.js, Express.js, SQLite &amp; JWT</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
